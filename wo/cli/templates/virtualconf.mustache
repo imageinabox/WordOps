@@ -38,7 +38,7 @@ server {
     {{/proxy}}
 
     {{^proxy}}
-    root {{webroot}}/htdocs;
+    root {{webroot}}/htdocs{{#wp}}/web{{/wp}};
 
     index {{^static}}index.php{{/static}} index.html index.htm;
 

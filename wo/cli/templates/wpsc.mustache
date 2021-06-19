@@ -6,7 +6,7 @@
 location / {
   # If we add index.php?$args its break WooCommerce like plugins
   # Ref: #330
-  try_files /wp-content/cache/supercache/$http_host/$cache_uri/index.html $uri $uri/ /index.php;
+  try_files /app/cache/supercache/$http_host/$cache_uri/index.html $uri $uri/ /index.php;
 }
 location ~ \.php$ {
   try_files $uri =404;

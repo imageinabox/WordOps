@@ -458,7 +458,7 @@ class WODebugController(CementBaseController):
                 if not WOShellExec.cmd_exec(self, "grep \"\'WP_DEBUG\'\" {0} |"
                                             " grep true".format(wp_config)):
                     Log.info(self, "Starting WordPress debug")
-                    open("{0}/htdocs/wp-content/debug.log".format(webroot),
+                    open("{0}/htdocs/web/app/debug.log".format(webroot),
                          encoding='utf-8', mode='a').close()
                     WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/wp-"
                                          "content/debug.log"
@@ -475,11 +475,11 @@ class WODebugController(CementBaseController):
                                          "developer query-monitor"
                                          .format(webroot))
                     WOShellExec.cmd_exec(self, "chown -R {1}: {0}/htdocs/"
-                                         "wp-content/plugins"
+                                         "web/app/plugins"
                                          .format(webroot,
                                                  WOVar.wo_php_user))
 
-                self.msg = self.msg + ['{0}{1}/htdocs/wp-content'
+                self.msg = self.msg + ['{0}{1}/htdocs/web/app'
                                        '/debug.log'
                                        .format(WOVar.wo_webroot,
                                                self.app.pargs.site_name)]

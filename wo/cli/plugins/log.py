@@ -122,22 +122,22 @@ class WOLogShowController(CementBaseController):
                                        .format(WOVar.wo_webroot,
                                                self.app.pargs.site_name)]
             if self.app.pargs.wp:
-                if os.path.isdir('{0}/htdocs/wp-content'.format(webroot)):
+                if os.path.isdir('{0}/htdocs/web/app'.format(webroot)):
                     if not os.path.isfile('{0}/logs/debug.log'
                                           .format(webroot)):
-                        if not os.path.isfile('{0}/htdocs/wp-content/debug.log'
+                        if not os.path.isfile('{0}/htdocs/web/app/debug.log'
                                               .format(webroot)):
-                            open("{0}/htdocs/wp-content/debug.log"
+                            open("{0}/htdocs/web/app/debug.log"
                                  .format(webroot),
                                  encoding='utf-8', mode='a').close()
                             WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/"
-                                                 "wp-content/debug.log"
+                                                 "web/app/debug.log"
                                                  "".format(webroot,
                                                            WOVar
                                                            .wo_php_user)
                                                  )
                     # create symbolic link for debug log
-                    WOFileUtils.create_symlink(self, ["{0}/htdocs/wp-content/"
+                    WOFileUtils.create_symlink(self, ["{0}/htdocs/web/app/"
                                                       "debug.log"
                                                       .format(webroot),
                                                       '{0}/logs/debug.log'
@@ -261,22 +261,22 @@ class WOLogResetController(CementBaseController):
                                        .format(WOVar.wo_webroot,
                                                self.app.pargs.site_name)]
             if self.app.pargs.wp:
-                if os.path.isdir('{0}/htdocs/wp-content'.format(webroot)):
+                if os.path.isdir('{0}/htdocs/web/app'.format(webroot)):
                     if not os.path.isfile('{0}/logs/debug.log'
                                           .format(webroot)):
-                        if not os.path.isfile('{0}/htdocs/wp-content/debug.log'
+                        if not os.path.isfile('{0}/htdocs/web/app/debug.log'
                                               .format(webroot)):
-                            open("{0}/htdocs/wp-content/debug.log"
+                            open("{0}/htdocs/web/app/debug.log"
                                  .format(webroot),
                                  encoding='utf-8', mode='a').close()
                             WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/"
-                                                 "wp-content/debug.log"
+                                                 "web/app/debug.log"
                                                  "".format(webroot,
                                                            WOVar
                                                            .wo_php_user)
                                                  )
                     # create symbolic link for debug log
-                    WOFileUtils.create_symlink(self, ["{0}/htdocs/wp-content/"
+                    WOFileUtils.create_symlink(self, ["{0}/htdocs/web/app/"
                                                       "debug.log"
                                                       .format(webroot),
                                                       '{0}/logs/debug.log'
@@ -390,22 +390,22 @@ class WOLogGzipController(CementBaseController):
                                        .format(WOVar.wo_webroot,
                                                self.app.pargs.site_name)]
             if self.app.pargs.wp:
-                if os.path.isdir('{0}/htdocs/wp-content'.format(webroot)):
+                if os.path.isdir('{0}/htdocs/web/app'.format(webroot)):
                     if not os.path.isfile('{0}/logs/debug.log'
                                           .format(webroot)):
-                        if not os.path.isfile('{0}/htdocs/wp-content/debug.log'
+                        if not os.path.isfile('{0}/htdocs/web/app/debug.log'
                                               .format(webroot)):
-                            open("{0}/htdocs/wp-content/debug.log"
+                            open("{0}/htdocs/web/app/debug.log"
                                  .format(webroot),
                                  encoding='utf-8', mode='a').close()
                             WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/"
-                                                 "wp-content/debug.log"
+                                                 "web/app/debug.log"
                                                  "".format(webroot,
                                                            WOVar
                                                            .wo_php_user)
                                                  )
                     # create symbolic link for debug log
-                    WOFileUtils.create_symlink(self, ["{0}/htdocs/wp-content/"
+                    WOFileUtils.create_symlink(self, ["{0}/htdocs/web/app/"
                                                       "debug.log"
                                                       .format(webroot),
                                                       '{0}/logs/debug.log'
@@ -527,22 +527,22 @@ class WOLogMailController(CementBaseController):
                                        .format(WOVar.wo_webroot,
                                                self.app.pargs.site_name)]
             if self.app.pargs.wp:
-                if os.path.isdir('{0}/htdocs/wp-content'.format(webroot)):
+                if os.path.isdir('{0}/htdocs/web/app'.format(webroot)):
                     if not os.path.isfile('{0}/logs/debug.log'
                                           .format(webroot)):
-                        if not os.path.isfile('{0}/htdocs/wp-content/debug.log'
+                        if not os.path.isfile('{0}/htdocs/web/app/debug.log'
                                               .format(webroot)):
-                            open("{0}/htdocs/wp-content/debug.log"
+                            open("{0}/htdocs/web/app/debug.log"
                                  .format(webroot),
                                  encoding='utf-8', mode='a').close()
                             WOShellExec.cmd_exec(self, "chown {1}: {0}/htdocs/"
-                                                 "wp-content/debug.log"
+                                                 "web/app/debug.log"
                                                  "".format(webroot,
                                                            WOVar
                                                            .wo_php_user)
                                                  )
                     # create symbolic link for debug log
-                    WOFileUtils.create_symlink(self, ["{0}/htdocs/wp-content/"
+                    WOFileUtils.create_symlink(self, ["{0}/htdocs/web/app/"
                                                       "debug.log"
                                                       .format(webroot),
                                                       '{0}/logs/debug.log'

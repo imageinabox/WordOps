@@ -1032,44 +1032,44 @@ def display_cache_settings(self, data):
     if data['wpsc']:
         if data['multisite']:
             Log.info(self, "Configure WPSC:"
-                     "\t\thttp://{0}/wp-admin/network/settings.php?"
+                     "\t\thttp://{0}/wp/wp-admin/network/settings.php?"
                      "page=wpsupercache"
                      .format(data['site_name']))
         else:
             Log.info(self, "Configure WPSC:"
-                     "\t\thttp://{0}/wp-admin/options-general.php?"
+                     "\t\thttp://{0}/wp/wp-admin/options-general.php?"
                      "page=wpsupercache"
                      .format(data['site_name']))
 
     if data['wpredis']:
         if data['multisite']:
             Log.info(self, "Configure redis-cache:"
-                     "\thttp://{0}/wp-admin/network/settings.php?"
+                     "\thttp://{0}/wp/wp-admin/network/settings.php?"
                      "page=redis-cache".format(data['site_name']))
         else:
             Log.info(self, "Configure redis-cache:"
-                     "\thttp://{0}/wp-admin/options-general.php?"
+                     "\thttp://{0}/wp/wp-admin/options-general.php?"
                      "page=redis-cache".format(data['site_name']))
         Log.info(self, "Object Cache:\t\tEnable")
 
     if data['wpfc']:
         if data['multisite']:
             Log.info(self, "Nginx-Helper configuration :"
-                     "\thttp://{0}/wp-admin/network/settings.php?"
+                     "\thttp://{0}/wp/wp-admin/network/settings.php?"
                      "page=nginx".format(data['site_name']))
         else:
             Log.info(self, "Nginx-Helper configuration :"
-                     "\thttp://{0}/wp-admin/options-general.php?"
+                     "\thttp://{0}/wp/wp-admin/options-general.php?"
                      "page=nginx".format(data['site_name']))
 
     if data['wpce']:
         if data['multisite']:
             Log.info(self, "Cache-Enabler configuration :"
-                     "\thttp://{0}/wp-admin/network/settings.php?"
+                     "\thttp://{0}/wp/wp-admin/network/settings.php?"
                      "page=cache-enabler".format(data['site_name']))
         else:
             Log.info(self, "Cache-Enabler configuration :"
-                     "\thttp://{0}/wp-admin/options-general.php?"
+                     "\thttp://{0}/wp/wp-admin/options-general.php?"
                      "page=cache-enabler".format(data['site_name']))
 
 

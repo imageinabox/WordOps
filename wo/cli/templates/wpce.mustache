@@ -3,14 +3,14 @@
 # $cache_uri variable set in /etc/nginx/conf.d/map-wp.conf
 # Use cached or actual file if they exists, Otherwise pass request to WordPress
 location / {
-    try_files /wp-content/cache/cache-enabler/${http_host}${cache_uri}index.html $uri $uri/ /index.php$is_args$args;
+    try_files /app/cache/cache-enabler/${http_host}${cache_uri}index.html $uri $uri/ /index.php$is_args$args;
 }
 location ~ \.php$ {
     try_files $uri =404;
     include fastcgi_params;
     fastcgi_pass {{upstream}};
 }
-location ~ /wp-content/cache/cache-enabler/*\.html$ {
+location ~ /app/cache/cache-enabler/*\.html$ {
     etag on;
     add_header Vary "Accept-Encoding, Cookie";
     access_log off;
