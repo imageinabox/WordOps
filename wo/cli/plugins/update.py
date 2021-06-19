@@ -46,7 +46,7 @@ class WOUpdateController(CementBaseController):
         filename = "woupdate" + time.strftime("%Y%m%d-%H%M%S")
 
         install_args = ""
-        wo_branch = "master"
+        wo_branch = "main"
         if pargs.mainline or pargs.beta:
             wo_branch = "mainline"
             install_args = install_args + "--mainline "
@@ -63,7 +63,7 @@ class WOUpdateController(CementBaseController):
             (not pargs.mainline) and (not pargs.beta) and
                 (not pargs.branch)):
             wo_current = ("v{0}".format(WOVar.wo_version))
-            wo_latest = WODownload.latest_release(self, "WordOps/WordOps")
+            wo_latest = WODownload.latest_release(self, "imageinabox/WordOps")
             if wo_current == wo_latest:
                 Log.info(
                     self, "WordOps {0} is already installed"
@@ -73,7 +73,7 @@ class WOUpdateController(CementBaseController):
         if not os.path.isdir('/var/lib/wo/tmp'):
             os.makedirs('/var/lib/wo/tmp')
         WODownload.download(self, [["https://raw.githubusercontent.com/"
-                                    "WordOps/WordOps/{0}/install"
+                                    "imageinabox/WordOps/{0}/install"
                                     .format(wo_branch),
                                     "/var/lib/wo/tmp/{0}".format(filename),
                                     "update script"]])
