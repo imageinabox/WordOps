@@ -13,17 +13,18 @@ location = /wp/wp-cron.php {
     fastcgi_pass {{upstream}};
 }
 # Prevent DoS attacks with xmlrpc.php
+
 location = /wp/xmlrpc.php {
-    limit_req zone=two burst=1 nodelay;
-    include fastcgi_params;
-    fastcgi_pass {{upstream}};
+    deny all;
 }
+
 # Disable wp-config.txt
 location = /wp-config.txt {
     deny all;
     access_log off;
     log_not_found off;
 }
+
 location = /robots.txt {
 # Some WordPress plugin gererate robots.txt file
 # Refer #340 issue
