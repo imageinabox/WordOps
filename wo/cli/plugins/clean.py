@@ -87,6 +87,9 @@ class WOCleanController(CementBaseController):
                 if os.path.exists('{0}php74.php'.format(opcache_dir)):
                     requests.get(
                         "http://127.0.0.1/cache/opcache/php74.php")
+                if os.path.exists('{0}php80.php'.format(opcache_dir)):
+                    requests.get(
+                        "http://127.0.0.1/cache/opcache/php80.php")
             except requests.HTTPError as e:
                 Log.debug(self, "{0}".format(e))
                 Log.debug(self, "Unable hit url, "

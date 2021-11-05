@@ -39,6 +39,8 @@ class WOSiteCreateController(CementBaseController):
                 dict(help="create php 7.3 site", action='store_true')),
             (['--php74'],
                 dict(help="create php 7.4 site", action='store_true')),
+            (['--php80'],
+                dict(help="create php 8.0 site", action='store_true')),
             (['--mysql'],
                 dict(help="create mysql site", action='store_true')),
             (['--wp'],
@@ -167,7 +169,7 @@ class WOSiteCreateController(CementBaseController):
             data['port'] = port
             data['basic'] = True
 
-        if pargs.php72 or pargs.php73 or pargs.php74:
+        if pargs.php72 or pargs.php73 or pargs.php74 or pargs.php80:
             data = dict(
                 site_name=wo_domain, www_domain=wo_www_domain,
                 static=False, basic=False,
@@ -213,6 +215,7 @@ class WOSiteCreateController(CementBaseController):
 
         data['php73'] = False
         data['php74'] = False
+        data['php80'] = False
         data['php72'] = False
 
         if data and pargs.php73:
@@ -221,6 +224,9 @@ class WOSiteCreateController(CementBaseController):
         elif data and pargs.php74:
             data['php74'] = True
             data['wo_php'] = 'php74'
+        elif data and pargs.php80:
+            data['php80'] = True
+            data['wo_php'] = 'php80'
         elif data and pargs.php72:
             data['php72'] = True
             data['wo_php'] = 'php72'
@@ -237,6 +243,9 @@ class WOSiteCreateController(CementBaseController):
                 elif config_php_ver == '7.4':
                     data['php74'] = True
                     data['wo_php'] = 'php74'
+                elif config_php_ver == '8.0':
+                    data['php80'] = True
+                    data['wo_php'] = 'php80'
             else:
                 data['php73'] = True
                 data['wo_php'] = 'php73'
@@ -306,6 +315,8 @@ class WOSiteCreateController(CementBaseController):
                 php_version = "7.2"
             elif data['php74']:
                 php_version = "7.4"
+            elif data['php80']:
+                php_version = "8.0"
             else:
                 php_version = "7.3"
 

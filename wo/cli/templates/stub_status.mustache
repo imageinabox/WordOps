@@ -10,6 +10,9 @@ upstream php73opcache {
 upstream php74opcache {
     server unix:/run/php/php74-fpm.sock;
 }
+upstream php80opcache {
+    server unix:/run/php/php80-fpm.sock;
+}
 {{/phpconf}}
 server {
     listen 127.0.0.1:80;
@@ -54,6 +57,13 @@ server {
         try_files $uri =404;
         include fastcgi_params;
         fastcgi_pass php74opcache;
+        access_log off;
+        log_not_found off;
+    }
+    location /cache/opcache/php80.php {
+        try_files $uri =404;
+        include fastcgi_params;
+        fastcgi_pass php80opcache;
         access_log off;
         log_not_found off;
     }
