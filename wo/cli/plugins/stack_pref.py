@@ -203,6 +203,10 @@ def post_pref(self, apt_packages, packages, upgrade=False):
                     'cloudflare.mustache', data)
 
                 WOTemplate.deploy(
+                    self, '{0}/stackdriver.conf'.format(ngxcnf),
+                    'stackdriver.mustache', data)
+
+                WOTemplate.deploy(
                     self,
                     '{0}/map-wp-fastcgi-cache.conf'.format(ngxcnf),
                     'map-wp.mustache', data)
