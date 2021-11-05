@@ -2,15 +2,15 @@
 # DO NOT MODIFY, ALL CHANGES WILL BE LOST AFTER AN WordOps (wo) UPDATE
 
 server {
-    listen 80;
-    server_name local-stackdriver-agent.stackdriver.com;
-    location /nginx_status {
-        stub_status on;
-        access_log off;
-        allow 127.0.0.1;
-        deny all;
-    }
-    location / {
-        root /dev/null;
-    }
+   listen 80;
+   server_name 127.0.0.1;
+   location /status {
+       stub_status on;
+       access_log off;
+       allow 127.0.0.1;
+       deny all;
+   }
+   location / {
+       root /dev/null;
+   }
 }
