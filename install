@@ -468,7 +468,7 @@ wo_install() {
         fi
     fi
 
-    if [ "$wo_branch" = "master" ]; then
+    if [ "$wo_branch" = "main" ]; then
         python3 -m pip install -U wordops
     else
         python3 -m pip install -I "git+git://github.com/imageinabox/WordOps.git@$wo_branch#egg=wordops"
