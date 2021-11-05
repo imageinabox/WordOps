@@ -2,13 +2,13 @@ language: shell
 
 jobs:
   include:
-    - if: branch = master
+    - if: branch = main
       os: linux
       dist: xenial
-    - if: branch = master
+    - if: branch = main
       os: linux
       dist: bionic
-    - if: branch = master
+    - if: branch = main
       os: linux
       dist: focal
 
