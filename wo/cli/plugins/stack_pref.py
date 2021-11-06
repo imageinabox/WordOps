@@ -80,8 +80,8 @@ def pre_pref(self, apt_packages):
             WORepo.add_key(self, WOVar.wo_nginx_key)
 
     # add php repository
-    if (('php7.3-fpm' in apt_packages) or
-            ('php7.2-fpm' in apt_packages) or ('php7.4-fpm' in apt_packages)):
+    if (('php7.3-fpm' in apt_packages) or ('php7.2-fpm' in apt_packages) or
+            ('php7.4-fpm' in apt_packages) or ('php8.0-fpm' in apt_packages)):
         if (WOVar.wo_distro == 'ubuntu'):
             Log.debug(self, 'Adding ppa for PHP')
             Log.info(self, "Adding repository for PHP, please wait...")
