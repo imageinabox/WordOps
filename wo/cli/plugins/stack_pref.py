@@ -203,8 +203,8 @@ def post_pref(self, apt_packages, packages, upgrade=False):
                     'cloudflare.mustache', data)
 
                 WOTemplate.deploy(
-                    self, '{0}/stackdriver.conf'.format(ngxcnf),
-                    'stackdriver.mustache', data)
+                    self, '{0}/gcp-ops-agent.conf'.format(ngxcnf),
+                    'gcp-ops-agent.mustache', data)
 
                 WOTemplate.deploy(
                     self,
