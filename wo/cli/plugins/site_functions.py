@@ -268,19 +268,23 @@ def setupwordpress(self, data, vhostonly=False):
     if 'wp-pass' in data.keys() and data['wp-pass']:
         wo_wp_pass = data['wp-pass']
 
-    Log.info(self, "Downloading WordPress \t\t", end='')
+    Log.info(self, "Symlinking WordPress \t\t", end='')
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
+    WOFileUtils.mkdir(self, '{0}/htdocs/web/'.format(wo_site_webroot))
     try:
-        if WOShellExec.cmd_exec(self, "wp --allow-root core"
-                                " download"):
+        if WOFileUtils.create_symlink(self, [
+            '/var/www/symlinks/wordpress',
+            '{0}/htdocs/web/wp'.format(wo_site_webroot)
+            ]):
+
             pass
         else:
             Log.info(self, "[" + Log.ENDC + Log.FAIL +
                      "Fail" + Log.OKBLUE + "]")
-            raise SiteError("download WordPress core failed")
+            raise SiteError("symlinking WordPress failed")
     except CommandExecutionError:
         Log.info(self, "[" + Log.ENDC + Log.FAIL + "Fail" + Log.OKBLUE + "]")
-        raise SiteError("download WordPress core failed")
+        raise SiteError("symlinking WordPress failed")
 
     Log.info(self, "[" + Log.ENDC + "Done" + Log.OKBLUE + "]")
 
