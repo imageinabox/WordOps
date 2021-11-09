@@ -272,16 +272,10 @@ def setupwordpress(self, data, vhostonly=False):
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
     WOFileUtils.mkdir(self, '{0}/htdocs/web/'.format(wo_site_webroot))
     try:
-        if WOFileUtils.create_symlink(self, [
+        WOFileUtils.create_symlink(self, [
             '/var/www/symlinks/wordpress',
             '{0}/htdocs/web/wp'.format(wo_site_webroot)
-            ]):
-
-            pass
-        else:
-            Log.info(self, "[" + Log.ENDC + Log.FAIL +
-                     "Fail" + Log.OKBLUE + "]")
-            raise SiteError("symlinking WordPress failed")
+            ])
     except CommandExecutionError:
         Log.info(self, "[" + Log.ENDC + Log.FAIL + "Fail" + Log.OKBLUE + "]")
         raise SiteError("symlinking WordPress failed")
