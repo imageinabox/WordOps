@@ -303,15 +303,15 @@ def setupwordpress(self, data, vhostonly=False):
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
     Log.debug(self, "Setting up wp-config (env) file")
     Log.debug(self, "Generating .env for WordPress Single site")
-    Log.debug(self, "/bin/bash -c \"cat > .env <<EOL" +
-        "DB_NAME={0}" +
-        "DB_USER={1}" +
-        "DB_HOST={2}" +
-        "DB_PREFIX={3}" +
-        "" +
-        "WP_ENV=production" +
-        "WP_HOME=http://{4}" +
-        "WP_SITEURL=$\{WP_HOME\}/wp" +
+    Log.debug(self, "/bin/bash -c \"cat > .env <<EOL\n" +
+        "DB_NAME={0}\n" +
+        "DB_USER={1}\n" +
+        "DB_HOST={2}\n" +
+        "DB_PREFIX={3}\n" +
+        "\n" +
+        "WP_ENV=production\n" +
+        "WP_HOME=http://{4}\n" +
+        "WP_SITEURL=$\{WP_HOME\}/wp\n" +
         "EOL\""
         .format(data['wo_db_name'], data['wo_db_user'],
             data['wo_db_host'], wo_wp_prefix, wo_domain_name
@@ -319,16 +319,16 @@ def setupwordpress(self, data, vhostonly=False):
       )
 
     try:
-        WOShellExec.cmd_exec(self, "/bin/bash -c \"cat > .env <<EOL" +
-            "DB_NAME={0}" +
-            "DB_USER={1}" +
-            "DB_PASSWORD={2}" +
-            "DB_HOST={3}" +
-            "DB_PREFIX={4}" +
-            "" +
-            "WP_ENV=production" +
-            "WP_HOME=http://{5}" +
-            "WP_SITEURL=$\{WP_HOME\}/wp" +
+        WOShellExec.cmd_exec(self, "/bin/bash -c \"cat > .env <<EOL\n" +
+            "DB_NAME={0}\n" +
+            "DB_USER={1}\n" +
+            "DB_PASSWORD={2}\n" +
+            "DB_HOST={3}\n" +
+            "DB_PREFIX={4}\n" +
+            "\n" +
+            "WP_ENV=production\n" +
+            "WP_HOME=http://{5}\n" +
+            "WP_SITEURL=$\{WP_HOME\}/wp\n" +
             "EOL\""
             .format(data['wo_db_name'], data['wo_db_user'],
                 data['wo_db_pass'], data['wo_db_host'], wo_wp_prefix, wo_domain_name
