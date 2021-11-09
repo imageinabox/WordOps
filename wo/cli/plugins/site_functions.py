@@ -301,233 +301,41 @@ def setupwordpress(self, data, vhostonly=False):
     # Modify wp-config.php & move outside the webroot
 
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
-    Log.debug(self, "Setting up wp-config file")
-    if not data['multisite']:
-        Log.debug(self, "Generating wp-config for WordPress Single site")
-        Log.debug(self, "/bin/bash -c \"{0} --allow-root "
-                  .format(WOVar.wo_wpcli_path) +
-                  "config create " +
-                  "--dbname=\'{0}\' --dbprefix=\'{1}\' --dbuser=\'{2}\' "
-                  "--dbhost=\'{3}\' "
-                  .format(data['wo_db_name'], wo_wp_prefix,
-                          data['wo_db_user'], data['wo_db_host']) +
-                  "--dbpass= "
-                  "--extra-php<<PHP \n {0}\nPHP\""
-                  .format("\n\ndefine(\'WP_DEBUG\', false);"))
-        try:
-            if WOShellExec.cmd_exec(self, "/bin/bash -c \"{0} --allow-root"
-                                    .format(WOVar.wo_wpcli_path) +
-                                    " config create " +
-                                    "--dbname=\'{0}\' --dbprefix=\'{1}\' "
-                                    "--dbuser=\'{2}\' --dbhost=\'{3}\' "
-                                    .format(data['wo_db_name'], wo_wp_prefix,
-                                            data['wo_db_user'],
-                                            data['wo_db_host']
-                                            ) +
-                                    "--dbpass=\'{0}\' "
-                                    "--extra-php<<PHP \n"
-                                    "\n{1}\nPHP\""
-                                    .format(data['wo_db_pass'],
-                                            "\ndefine(\'WP_DEBUG\', false);"),
-                                    log=False
-                                    ):
-                pass
-            else:
-                raise SiteError("generate wp-config failed for wp single site")
-        except CommandExecutionError:
-            raise SiteError("generate wp-config failed for wp single site")
-    else:
-        Log.debug(self, "Generating wp-config for WordPress multisite")
-        Log.debug(self, "/bin/bash -c \"{0} --allow-root "
-                  .format(WOVar.wo_wpcli_path) +
-                  "config create " +
-                  "--dbname=\'{0}\' --dbprefix=\'{1}\' --dbhost=\'{2}\' "
-                  .format(data['wo_db_name'],
-                          wo_wp_prefix, data['wo_db_host']) +
-                  "--dbuser=\'{0}\' --dbpass= "
-                  "--extra-php<<PHP \n {1} {2} {3} \nPHP\""
-                  .format(data['wo_db_user'],
-                          "\ndefine(\'WPMU_ACCEL_REDIRECT\',"
-                          " true);",
-                          "\ndefine(\'CONCATENATE_SCRIPTS\',"
-                          " false);",
-                          "\n\ndefine(\'WP_DEBUG\', false);"))
-        try:
-            if WOShellExec.cmd_exec(self, "/bin/bash -c \"{0} --allow-root"
-                                    .format(WOVar.wo_wpcli_path) +
-                                    " config create " +
-                                    "--dbname=\'{0}\' --dbprefix=\'{1}\' "
-                                    "--dbhost=\'{2}\' "
-                                    .format(data['wo_db_name'], wo_wp_prefix,
-                                            data['wo_db_host']) +
-                                    "--dbuser=\'{0}\' --dbpass=\'{1}\' "
-                                    "--extra-php<<PHP \n "
-                                    "\n{2} {3}\nPHP\""
-                                    .format(data['wo_db_user'],
-                                            data['wo_db_pass'],
-                                            "\ndefine(\'WPMU_ACCEL_REDIRECT\',"
-                                            " true);",
-                                            "\ndefine(\'WP_DEBUG\', false);"),
-                                    log=False
-                                    ):
-                pass
-            else:
-                raise SiteError("generate wp-config failed for wp multi site")
-        except CommandExecutionError:
-            raise SiteError("generate wp-config failed for wp multi site")
-
-    # set all wp-config.php variables
-    wp_conf_variables = [
-        ['WP_REDIS_PREFIX', '{0}:'.format(wo_domain_name)],
-        ['WP_MEMORY_LIMIT', '128M'],
-        ['WP_MAX_MEMORY_LIMIT', '256M'],
-        ['CONCATENATE_SCRIPTS', 'false'],
-        ['WP_POST_REVISIONS', '10'],
-        ['MEDIA_TRASH', 'true'],
-        ['EMPTY_TRASH_DAYS', '15'],
-        ['WP_AUTO_UPDATE_CORE', 'minor'],
-        ['WP_REDIS_DISABLE_BANNERS', 'true']]
-    Log.wait(self, "Configuring WordPress")
-    for wp_conf in wp_conf_variables:
-        wp_var = wp_conf[0]
-        wp_val = wp_conf[1]
-        var_raw = (bool(wp_val == 'true' or wp_val == 'false'))
-        try:
-            WOShellExec.cmd_exec(
-                self, "/bin/bash -c \"{0} --allow-root "
-                .format(WOVar.wo_wpcli_path) +
-                "config set {0} "
-                "\'{1}\' {wp_raw}\""
-                .format(wp_var, wp_val,
-                        wp_raw='--raw'
-                        if var_raw is True else ''))
-        except CommandExecutionError as e:
-            Log.failed(self, "Configuring WordPress")
-            Log.debug(self, str(e))
-            Log.error(self, 'Unable to define wp-config.php variables')
-    Log.valide(self, "Configuring WordPress")
-
-    # WOFileUtils.mvfile(self, os.getcwd()+'/wp-config.php',
-    #                   os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
+    Log.debug(self, "Setting up wp-config (env) file")
+    Log.debug(self, "Generating .env for WordPress Single site")
+    Log.debug(self, "/bin/bash -c \"cat > .env <<EOL" +
+        "DB_NAME={0}" +
+        "DB_USER={1}" +
+        "DB_HOST={2}" +
+        "DB_PREFIX={3}" +
+        "" +
+        "WP_ENV=production" +
+        "WP_HOME=http://{4}" +
+        "WP_SITEURL=$\{WP_HOME\}/wp" +
+        "EOL\""
+        .format(data['wo_db_name'], data['wo_db_user'],
+            data['wo_db_host'], wo_wp_prefix, wo_domain_name
+        )
+      )
 
     try:
-
-        Log.debug(self, "Moving file from {0} to {1}".format(os.getcwd(
-        ) + '/wp-config.php', os.path.abspath(os.path.join(os.getcwd(),
-                                                           os.pardir))))
-        shutil.move(os.getcwd() + '/wp-config.php',
-                    os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-    except Exception as e:
-        Log.debug(self, str(e))
-        Log.error(self, 'Unable to move file from {0} to {1}'
-                  .format(os.getcwd() + '/wp-config.php',
-                          os.path.abspath(os.path.join(os.getcwd(),
-                                                       os.pardir))), False)
-        raise SiteError("Unable to move wp-config.php")
-
-    if not wo_wp_user:
-        wo_wp_user = WOVar.wo_user
-        while not wo_wp_user:
-            Log.warn(self, "Username can have only alphanumeric"
-                     "characters, spaces, underscores, hyphens,"
-                     "periods and the @ symbol.")
-            try:
-                wo_wp_user = input('Enter WordPress username: ')
-            except EOFError:
-                raise SiteError("input WordPress username failed")
-    if not wo_wp_pass:
-        wo_wp_pass = wo_random_pass
-
-    if not wo_wp_email:
-        wo_wp_email = WOVar.wo_email
-        while not wo_wp_email:
-            try:
-                wo_wp_email = input('Enter WordPress email: ')
-            except EOFError:
-                raise SiteError("input WordPress username failed")
-
-    try:
-        while not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$",
-                           wo_wp_email):
-            Log.info(self, "EMail not Valid in config, "
-                     "Please provide valid email id")
-            wo_wp_email = input("Enter your email: ")
-    except EOFError:
-        raise SiteError("input WordPress user email failed")
-
-    Log.debug(self, "Setting up WordPress tables")
-    Log.wait(self, "Installing WordPress")
-    if not data['multisite']:
-        Log.debug(self, "Creating tables for WordPress Single site")
-        Log.debug(
-            self, "{0} --allow-root core install "
-                  .format(WOVar.wo_wpcli_path) +
-                  "--url=\'{0}\' --title=\'{0}\' --admin_name=\'{1}\' "
-                  .format(data['site_name'], wo_wp_user) +
-                  "--admin_password= --admin_email=\'{0}\'"
-                  .format(wo_wp_email))
-        try:
-            if WOShellExec.cmd_exec(
-                self, "{0} --allow-root core "
-                .format(WOVar.wo_wpcli_path) +
-                "install --url=\'{0}\' --title=\'{0}\' "
-                "--admin_name=\'{1}\' "
-                .format(data['site_name'], wo_wp_user) +
-                "--admin_password=\'{0}\' "
-                "--admin_email=\'{1}\'"
-                .format(wo_wp_pass, wo_wp_email),
-                    log=False):
-                pass
-            else:
-                Log.failed(self, "Installing WordPress")
-                raise SiteError(
-                    "setup WordPress tables failed for single site")
-        except CommandExecutionError:
-            raise SiteError("setup WordPress tables failed for single site")
-    else:
-        Log.debug(self, "Creating tables for WordPress multisite")
-        Log.debug(self, "{0} --allow-root "
-                  .format(WOVar.wo_wpcli_path) +
-                  "core multisite-install "
-                  "--url=\'{0}\' --title=\'{0}\' --admin_name=\'{1}\' "
-                  .format(data['site_name'], wo_wp_user) +
-                  "--admin_password= --admin_email=\'{0}\' "
-                  "{subdomains}"
-                  .format(wo_wp_email,
-                          subdomains='--subdomains'
-                          if not data['wpsubdir'] else ''))
-        try:
-            if WOShellExec.cmd_exec(
-                self, "{0} --allow-root "
-                .format(WOVar.wo_wpcli_path) +
-                "core multisite-install "
-                "--url=\'{0}\' --title=\'{0}\' "
-                "--admin_name=\'{1}\' "
-                .format(data['site_name'], wo_wp_user) +
-                "--admin_password=\'{0}\' "
-                "--admin_email=\'{1}\' "
-                "{subdomains}"
-                .format(wo_wp_pass, wo_wp_email,
-                        subdomains='--subdomains'
-                        if not data['wpsubdir'] else ''),
-                    log=False):
-                pass
-            else:
-                Log.failed(self, "Installing WordPress")
-                raise SiteError(
-                    "setup WordPress tables failed for wp multi site")
-        except CommandExecutionError:
-            raise SiteError("setup WordPress tables failed for wp multi site")
-    Log.valide(self, "Installing WordPress")
-    Log.debug(self, "Updating WordPress permalink")
-    try:
-        WOShellExec.cmd_exec(self, " {0} --allow-root "
-                             .format(WOVar.wo_wpcli_path) +
-                             "rewrite structure "
-                             "/%postname%/")
-    except CommandExecutionError as e:
-        Log.debug(self, str(e))
-        raise SiteError("Update wordpress permalinks failed")
+        WOShellExec.cmd_exec(self, "/bin/bash -c \"cat > .env <<EOL" +
+            "DB_NAME={0}" +
+            "DB_USER={1}" +
+            "DB_PASSWORD={2}" +
+            "DB_HOST={3}" +
+            "DB_PREFIX={4}" +
+            "" +
+            "WP_ENV=production" +
+            "WP_HOME=http://{5}" +
+            "WP_SITEURL=$\{WP_HOME\}/wp" +
+            "EOL\""
+            .format(data['wo_db_name'], data['wo_db_user'],
+                data['wo_db_pass'], data['wo_db_host'], wo_wp_prefix, wo_domain_name
+            )
+          )
+    except CommandExecutionError:
+        raise SiteError("generate .env failed for wp single site")
 
     """Install nginx-helper plugin """
     installwp_plugin(self, 'nginx-helper', data)
