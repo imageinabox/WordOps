@@ -328,9 +328,6 @@ def setupwordpress(self, data, vhostonly=False):
             "WP_HOME=http://{0}\n".format(wo_domain_name) +
             "WP_SITEURL=$\{WP_HOME\}/wp\n" +
             "EOL\""
-            .format(data['wo_db_name'], data['wo_db_user'],
-                data['wo_db_pass'], data['wo_db_host'], wo_wp_prefix, wo_domain_name
-            )
           )
     except CommandExecutionError:
         raise SiteError("generate .env failed for wp single site")
