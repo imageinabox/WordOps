@@ -304,7 +304,7 @@ def setupwordpress(self, data, vhostonly=False):
     Log.debug(self, "Setting up wp-config (env) file")
     Log.debug(self, "Generating .env for WordPress Single site")
     Log.debug(self, "/bin/bash -c \"cat > .env <<EOL\n" +
-        "DB_NAME={0}\n".format(data['wo_db_name'] +
+        "DB_NAME={0}\n".format(data['wo_db_name']) +
         "DB_USER={0}\n".format(data['wo_db_user']) +
         "DB_PASSWORD=\n" +
         "DB_HOST={0}\n".format(data['wo_db_host']) +
@@ -318,7 +318,7 @@ def setupwordpress(self, data, vhostonly=False):
 
     try:
         WOShellExec.cmd_exec(self, "/bin/bash -c \"cat > .env <<EOL\n" +
-            "DB_NAME={0}\n".format(data['wo_db_name'] +
+            "DB_NAME={0}\n".format(data['wo_db_name']) +
             "DB_USER={0}\n".format(data['wo_db_user']) +
             "DB_PASSWORD={0}\n".format(data['wo_db_pass']) +
             "DB_HOST={0}\n".format(data['wo_db_host']) +
