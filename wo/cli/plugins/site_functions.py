@@ -312,7 +312,7 @@ def setupwordpress(self, data, vhostonly=False):
         "\n" +
         "WP_ENV=production\n" +
         "WP_HOME=http://{0}\n".format(wo_domain_name) +
-        "WP_SITEURL=${WP_HOME}/wp\n" +
+        "WP_SITEURL=${{WP_HOME}}/wp\n" +
         "EOL\""
       )
 
@@ -326,7 +326,7 @@ def setupwordpress(self, data, vhostonly=False):
             "\n" +
             "WP_ENV=production\n" +
             "WP_HOME=http://{0}\n".format(wo_domain_name) +
-            "WP_SITEURL=${WP_HOME}/wp\n" +
+            "WP_SITEURL=${{WP_HOME}}/wp\n" +
             "EOL\""
           )
     except CommandExecutionError:
