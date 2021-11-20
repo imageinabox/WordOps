@@ -36,6 +36,19 @@ class WOCron():
                                  "\\\"; } | crontab -\"")
             Log.debug(self, "Cron set")
 
+    def setcron_wpcron(self, host, comment='WP-Cron set by WordOps', user='root'):
+        if not WOShellExec.cmd_exec(self, "crontab -l "
+                                    "| grep -q \'{0}\'".format(cmd)):
+
+            WOShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
+                                 "2> /dev/null | {{ cat; echo -e"
+                                 " \\\""
+                                 "\\n*/5 * * * * "
+                                 "curl http://{0}/wp/wp-cron.php".format(host) +
+                                 " # {0}".format(comment) +
+                                 "\\\"; } | crontab -\"")
+            Log.debug(self, "Cron set")
+
     def remove_cron(self, cmd):
         if WOShellExec.cmd_exec(self, "crontab -l "
                                 "| grep -q \'{0}\'".format(cmd)):
@@ -44,6 +57,18 @@ class WOCron():
                                         "-l | sed '/{0}/d'"
                                         "| crontab -\""
                                         .format(cmd)):
+                Log.error(self, "Failed to remove crontab entry", False)
+        else:
+            Log.debug(self, "Cron not found")
+
+    def remove_wpcron(self, host):
+        if WOShellExec.cmd_exec(self, "crontab -l "
+                                "| grep -q \'{0}\'".format(cmd)):
+            if not WOShellExec.cmd_exec(self, "/bin/bash -c "
+                                        "\"crontab "
+                                        "-l | sed '/{0}/d'"
+                                        "| crontab -\""
+                                        .format(host)):
                 Log.error(self, "Failed to remove crontab entry", False)
         else:
             Log.debug(self, "Cron not found")
