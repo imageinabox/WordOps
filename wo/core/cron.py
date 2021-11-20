@@ -38,7 +38,7 @@ class WOCron():
 
     def setcron_wpcron(self, host, comment='WP-Cron set by WordOps', user='root'):
         if not WOShellExec.cmd_exec(self, "crontab -l "
-                                    "| grep -q \'{0}\'".format(cmd)):
+                                    "| grep -q \'{0}\'".format(host)):
 
             WOShellExec.cmd_exec(self, "/bin/bash -c \"crontab -l "
                                  "2> /dev/null | {{ cat; echo -e"
