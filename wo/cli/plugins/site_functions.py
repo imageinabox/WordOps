@@ -14,6 +14,7 @@ from wo.cli.plugins.stack import WOStackController
 from wo.cli.plugins.stack_pref import post_pref
 from wo.core.acme import WOAcme
 from wo.core.aptget import WOAptGet
+from wo.core.cron import WOCron
 from wo.core.fileutils import WOFileUtils
 from wo.core.git import WOGit
 from wo.core.logging import Log
@@ -268,10 +269,12 @@ def setupwordpress(self, data, vhostonly=False):
     if 'wp-pass' in data.keys() and data['wp-pass']:
         wo_wp_pass = data['wp-pass']
 
-    Log.info(self, "Symlinking WordPress \t\t", end='')
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
     WOFileUtils.mkdir(self, '{0}/htdocs/web/'.format(wo_site_webroot))
+    WOFileUtils.mkdir(self, '{0}/htdocs/web/app'.format(wo_site_webroot))
+    WOFileUtils.mkdir(self, '{0}/htdocs/web/app/plugins'.format(wo_site_webroot))
     try:
+        Log.info(self, "Symlinking WordPress \t\t", end='')
         WOFileUtils.create_symlink(self, [
             '/var/www/symlinks/wordpress',
             '{0}/htdocs/web/wp'.format(wo_site_webroot)
@@ -301,6 +304,10 @@ def setupwordpress(self, data, vhostonly=False):
     # Modify wp-config.php & move outside the webroot
 
     WOFileUtils.chdir(self, '{0}/htdocs/'.format(wo_site_webroot))
+
+    Log.debug(self, "Set WP-Cron")
+    WOCron.setcron_wpcron(self,wo_domain_name)
+
     Log.debug(self, "Setting up wp-config (env) file")
     Log.debug(self, "Generating .env for WordPress Single site")
     Log.debug(self, "/bin/bash -c \"cat > .env <<EOL\n" +
@@ -332,8 +339,14 @@ def setupwordpress(self, data, vhostonly=False):
     except CommandExecutionError:
         raise SiteError("generate .env failed for wp single site")
 
-    """Install nginx-helper plugin """
-    installwp_plugin(self, 'nginx-helper', data)
+    ##"""Install nginx-helper plugin """
+    ##installwp_plugin(self, 'nginx-helper', data)
+    """Symlinking nginx-helper plugin """
+    WOFileUtils.create_symlink(self, [
+                '/var/www/symlinks/nginx-helper',
+                '{0}/htdocs/web/app/plugins/nginx-helper'.format(wo_site_webroot)
+                ])
+
     if data['wpfc']:
         plugin_data_object = {"log_level": "INFO",
                               "log_filesize": 5,
