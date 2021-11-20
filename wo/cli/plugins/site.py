@@ -9,6 +9,7 @@ from wo.cli.plugins.sitedb import (deleteSiteInfo, getAllsites,
                                    getSiteInfo, updateSiteInfo)
 from wo.cli.plugins.site_create import WOSiteCreateController
 from wo.cli.plugins.site_update import WOSiteUpdateController
+from wo.core.cron import WOCron
 from wo.core.domainvalidate import WODomain
 from wo.core.fileutils import WOFileUtils
 from wo.core.git import WOGit
@@ -422,6 +423,8 @@ class WOSiteDeleteController(CementBaseController):
                              .format(wo_site_webroot))
                     deleteWebRoot(self, wo_site_webroot)
                     updateSiteInfo(self, wo_domain, webroot='deleted')
+                    Log.debug(self, "Remove WP-Cron")
+                    WOCron.remove_wpcron(self,wo_domain)
                     mark_webroot_deleted = True
                     Log.info(self, "Deleted webroot successfully")
             else:
