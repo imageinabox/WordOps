@@ -63,7 +63,7 @@ class WOCron():
 
     def remove_wpcron(self, host):
         if WOShellExec.cmd_exec(self, "crontab -l "
-                                "| grep -q \'{0}\'".format(cmd)):
+                                "| grep -q \'{0}\'".format(host)):
             if not WOShellExec.cmd_exec(self, "/bin/bash -c "
                                         "\"crontab "
                                         "-l | sed '/{0}/d'"
