@@ -47,6 +47,8 @@ class WOStackController(CementBaseController):
                 dict(help='Install PHP 7.3 stack', action='store_true')),
             (['--php74'],
                 dict(help='Install PHP 7.4 stack', action='store_true')),
+            (['--php84'],
+                dict(help='Install PHP 8.4 stack', action='store_true')),
             (['--mysql'],
                 dict(help='Install MySQL stack', action='store_true')),
             (['--mariadb'],
@@ -116,7 +118,7 @@ class WOStackController(CementBaseController):
         try:
             # Default action for stack installation
             if not (pargs.web or pargs.admin or pargs.nginx or
-                    pargs.php or pargs.php72 or pargs.php73 or pargs.php74 or
+                    pargs.php or pargs.php72 or pargs.php73 or pargs.php74 or pargs.php84 or
                     pargs.mysql or pargs.wpcli or pargs.phpmyadmin or
                     pargs.composer or pargs.netdata or pargs.composer or
                     pargs.dashboard or pargs.fail2ban or pargs.security or
@@ -155,6 +157,8 @@ class WOStackController(CementBaseController):
                     pargs.php73 = True
                 elif config_php_ver == '7.4':
                     pargs.php74 = True
+                elif config_php_ver == '8.4':
+                    pargs.php84 = True
                 else:
                     pargs.php74 = True
                 pargs.nginx = True
@@ -226,6 +230,13 @@ class WOStackController(CementBaseController):
                     Log.debug(self, "PHP 7.4 already installed")
                     Log.info(self, "PHP 7.4 already installed")
 
+            # PHP 8.4
+            if pargs.php84:
+                if not WOAptGet.is_installed(self, 'php8.4-fpm'):
+                    apt_packages = apt_packages + WOVar.wo_php84
+                else:
+                    Log.debug(self, "PHP 8.4 already installed")
+                    Log.info(self, "PHP 8.4 already installed")
             # MariaDB 10.3
             if pargs.mysql:
                 pargs.mysqltuner = True

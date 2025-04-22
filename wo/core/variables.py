@@ -155,6 +155,9 @@ class WOVar():
     wo_php74 = []
     for module in wo_module:
         wo_php74 = wo_php74 + ["php7.4-{0}".format(module)]
+    wo_php84 = []
+    for module in wo_module:
+        wo_php84 = wo_php84 + ["php8.4-{0}".format(module)]
 
     wo_php_extra = ["graphviz"]
 

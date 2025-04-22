@@ -654,7 +654,7 @@ def site_package_check(self, stype):
     stack.app = self.app
     pargs = self.app.pargs
     if stype in ['html', 'proxy', 'php', 'php72', 'mysql', 'wp', 'wpsubdir',
-                 'wpsubdomain', 'php73', 'php74']:
+                 'wpsubdomain', 'php73', 'php74', 'php84']:
         Log.debug(self, "Setting apt_packages variable for Nginx")
 
         # Check if server has nginx-custom package
@@ -691,14 +691,15 @@ def site_package_check(self, stype):
                                    '\t$request_filename;\n')
 
     if ((pargs.php and pargs.php73) or (pargs.php and pargs.php74) or
-        (pargs.php and pargs.php72) or
+        (pargs.php and pargs.php72) or (pargs.php and pargs.php84) or
+        (pargs72.php and pargs.php84) or (pargs73.php and pargs.php84) or
         (pargs.php73 and pargs.php74) or (pargs.php72 and pargs.php73) or
             (pargs.php72 and pargs.php74)):
         Log.error(
             self, "Error: two different PHP versions cannot be "
                   "combined within the same WordOps site")
 
-    if ((not pargs.php72) and (not pargs.php73) and (not pargs.php74) and
+    if ((not pargs.php72) and (not pargs.php73) and (not pargs.php74) and (not pargs.php84) and
         stype in ['php', 'mysql', 'wp', 'wpsubdir',
                   'wpsubdomain']):
         Log.debug(self, "Setting apt_packages variable for PHP")
@@ -716,6 +717,9 @@ def site_package_check(self, stype):
             elif config_php_ver == '7.4':
                 php_check = 'php7.4-fpm'
                 php_to_setup = WOVar.wo_php74
+            elif config_php_ver == '8.4':
+                php_check = 'php8.4-fpm'
+                php_to_setup = WOVar.wo_php84
             else:
                 php_check = 'php7.3-fpm'
                 php_to_setup = WOVar.wo_php73
@@ -743,6 +747,12 @@ def site_package_check(self, stype):
         Log.debug(self, "Setting apt_packages variable for PHP 7.4")
         if not WOAptGet.is_installed(self, 'php7.4-fpm'):
             apt_packages = apt_packages + WOVar.wo_php74 + WOVar.wo_php_extra
+
+    if pargs.php84 and stype in ['php84', 'mysql', 'wp',
+                                 'wpsubdir', 'wpsubdomain']:
+        Log.debug(self, "Setting apt_packages variable for PHP 8.4")
+        if not WOAptGet.is_installed(self, 'php8.4-fpm'):
+            apt_packages = apt_packages + WOVar.wo_php84 + WOVar.wo_php_extra
 
     if stype in ['mysql', 'wp', 'wpsubdir', 'wpsubdomain']:
         Log.debug(self, "Setting apt_packages variable for MySQL")
@@ -1074,6 +1084,9 @@ def detSitePar(opts):
             sitetype = 'wp'
             cachetype = cachelist[0]
         elif (not typelist or "php74" in typelist) and cachelist:
+            sitetype = 'wp'
+            cachetype = cachelist[0]
+        elif (not typelist or "php84" in typelist) and cachelist:
             sitetype = 'wp'
             cachetype = cachelist[0]
         elif typelist and (not cachelist):

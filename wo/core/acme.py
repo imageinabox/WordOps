@@ -144,8 +144,9 @@ class WOAcme:
                                .format(wo_domain_name),
                                encoding='utf-8', mode='w')
                 sslconf.write(
-                    "listen 443 ssl http2;\n"
-                    "listen [::]:443 ssl http2;\n"
+                    "listen 443 ssl;\n"
+                    "http2 on;\n"
+                    "listen [::]:443 ssl;\n"
                     "ssl_certificate     {0}/{1}/fullchain.pem;\n"
                     "ssl_certificate_key     {0}/{1}/key.pem;\n"
                     "ssl_trusted_certificate {0}/{1}/ca.pem;\n"
