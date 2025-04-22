@@ -39,6 +39,8 @@ class WOStackUpgradeController(CementBaseController):
              dict(help='Upgrade PHP 7.3 stack', action='store_true')),
             (['--php74'],
              dict(help='Upgrade PHP 7.4 stack', action='store_true')),
+            (['--php84'],
+             dict(help='Upgrade PHP 8.4 stack', action='store_true')),
             (['--mysql'],
                 dict(help='Upgrade MySQL stack', action='store_true')),
             (['--mariadb'],
@@ -81,7 +83,7 @@ class WOStackUpgradeController(CementBaseController):
         pargs = self.app.pargs
         wo_phpmyadmin = WODownload.pma_release(self)
         if not (pargs.web or pargs.nginx or pargs.php or
-                pargs.php72 or pargs.php73 or pargs.php74 or pargs.mysql or
+                pargs.php72 or pargs.php73 or pargs.php74 or pargs.php84 or pargs.mysql or
                 pargs.mariadb or pargs.ngxblocker or pargs.all
                 or pargs.netdata or pargs.wpcli or pargs.composer or
                 pargs.phpmyadmin or pargs.adminer or pargs.dashboard or
@@ -108,6 +110,7 @@ class WOStackUpgradeController(CementBaseController):
             pargs.php72 = True
             pargs.php73 = True
             pargs.php74 = True
+            pargs.php84 = True
             pargs.mysql = True
             pargs.wpcli = True
 
@@ -151,6 +154,12 @@ class WOStackUpgradeController(CementBaseController):
         if pargs.php74:
             if WOAptGet.is_installed(self, 'php7.4-fpm'):
                 apt_packages = apt_packages + WOVar.wo_php74 + \
+                    WOVar.wo_php_extra
+
+        # php 8.4
+        if pargs.php84:
+            if WOAptGet.is_installed(self, 'php8.4-fpm'):
+                apt_packages = apt_packages + WOVar.wo_php84 + \
                     WOVar.wo_php_extra
 
         # mysql
@@ -284,6 +293,7 @@ class WOStackUpgradeController(CementBaseController):
                 if not ("php7.2-fpm" in apt_packages or
                         "php7.3-fpm" in apt_packages or
                         "php7.4-fpm" in apt_packages or
+                        "php8.4-fpm" in apt_packages or
                         "redis-server" in apt_packages or
                         "nginx-custom" in apt_packages or
                         "mariadb-server" in apt_packages):

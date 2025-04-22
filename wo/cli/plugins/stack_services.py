@@ -56,6 +56,10 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")   
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -74,6 +78,13 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+        
+        if pargs.php84:
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")   
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or
@@ -125,7 +136,7 @@ class WOStackStatusController(CementBaseController):
         pargs = self.app.pargs
         if not (pargs.nginx or pargs.php or
                 pargs.php72 or pargs.php73 or
-                pargs.php74 or
+                pargs.php74 or pargs.php84 or
                 pargs.mysql or
                 pargs.fail2ban or
                 pargs.netdata or
@@ -154,6 +165,10 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -172,6 +187,12 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+        
+        if pargs.php84:
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")   
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or
@@ -223,7 +244,7 @@ class WOStackStatusController(CementBaseController):
         pargs = self.app.pargs
         if not (pargs.nginx or pargs.php or
                 pargs.php72 or pargs.php73 or
-                pargs.php74 or
+                pargs.php74 or pargs.php84 or
                 pargs.mysql or
                 pargs.netdata or
                 pargs.proftpd or
@@ -253,6 +274,10 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -271,6 +296,12 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+        
+        if pargs.php84:
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or
@@ -324,6 +355,7 @@ class WOStackStatusController(CementBaseController):
                 pargs.php72 or
                 pargs.php73 or
                 pargs.php74 or
+                pargs.php84 or
                 pargs.mysql or
                 pargs.netdata or
                 pargs.proftpd or
@@ -355,6 +387,10 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -373,6 +409,12 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+
+        if pargs.php84:
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or
@@ -435,7 +477,7 @@ class WOStackStatusController(CementBaseController):
         pargs = self.app.pargs
         if not (pargs.nginx or pargs.php or
                 pargs.php72 or pargs.php73 or
-                pargs.php74 or
+                pargs.php74 or pargs.php84 or
                 pargs.mysql or
                 pargs.netdata or
                 pargs.proftpd or
@@ -465,6 +507,10 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -483,6 +529,12 @@ class WOStackStatusController(CementBaseController):
                 services = services + ['php7.4-fpm']
             else:
                 Log.info(self, "PHP7.4-FPM is not installed")
+
+        if pargs.php84:
+            if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
+                services = services + ['php8.4-fpm']
+            else:
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or

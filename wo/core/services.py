@@ -166,7 +166,8 @@ class WOService():
                                                   .format(service_name))
             if is_exist[0] == 0 or service_name in ['php7.2-fpm',
                                                     'php7.3-fpm',
-                                                    'php7.4-fpm']:
+                                                    'php7.4-fpm',
+                                                    'php8.4-fpm']:
                 retcode = subprocess.getstatusoutput('service {0} status'
                                                      .format(service_name))
                 if retcode[0] == 0:

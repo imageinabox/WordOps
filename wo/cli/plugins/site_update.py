@@ -47,6 +47,8 @@ class WOSiteUpdateController(CementBaseController):
                 dict(help="update to php73 site", action='store_true')),
             (['--php74'],
                 dict(help="update to php74 site", action='store_true')),
+            (['--php84'],
+                dict(help="update to php84 site", action='store_true')),
             (['--mysql'],
                 dict(help="update to mysql site", action='store_true')),
             (['--wp'],
@@ -110,10 +112,10 @@ class WOSiteUpdateController(CementBaseController):
             if pargs.html:
                 Log.error(self, "No site can be updated to html")
 
-            if not (pargs.php or pargs.php72 or pargs.php73 or pargs.php74 or
+            if not (pargs.php or pargs.php72 or pargs.php73 or pargs.php74 or pargs.php84 or
                     pargs.mysql or pargs.wp or pargs.wpsubdir or
                     pargs.wpsubdomain or pargs.wpfc or pargs.wpsc or
-                    pargs.wprocket or pargs.wpce or
+                    pargs.wprocket or pargs.wpce
                     pargs.wpredis or pargs.letsencrypt or pargs.hsts or
                     pargs.dns or pargs.force):
                 Log.error(self, "Please provide options to update sites.")
@@ -143,6 +145,7 @@ class WOSiteUpdateController(CementBaseController):
         php73 = False
         php74 = False
         php72 = False
+        php84 = False
 
         data = dict()
         try:
@@ -191,11 +194,12 @@ class WOSiteUpdateController(CementBaseController):
             old_php72 = bool(check_php_version == "7.2")
             old_php73 = bool(check_php_version == "7.3")
             old_php74 = bool(check_php_version == "7.4")
+            old_php84 = bool(check_php_version == "8.4")
 
         if ((pargs.password or pargs.hsts or
              pargs.ngxblocker or pargs.letsencrypt == 'renew') and not (
             pargs.html or pargs.php or pargs.php72 or pargs.php73 or
-            pargs.php74 or
+            pargs.php74 or pargs.php84 or
             pargs.mysql or pargs.wp or pargs.wpfc or pargs.wpsc or
             pargs.wprocket or pargs.wpce or
                 pargs.wpsubdir or pargs.wpsubdomain)):
@@ -263,16 +267,16 @@ class WOSiteUpdateController(CementBaseController):
 
         if (((stype == 'php' and
               oldsitetype not in ['html', 'proxy', 'php', 'php72',
-                                  'php73', 'php74']) or
+                                  'php73', 'php74', 'php84']) or
              (stype == 'mysql' and oldsitetype not in [
-                 'html', 'php', 'php72', 'php73', 'php74', 'proxy']) or
+                 'html', 'php', 'php72', 'php73', 'php74', 'php84', 'proxy']) or
              (stype == 'wp' and oldsitetype not in [
-                 'html', 'php', 'php72', 'php73', 'php74', 'mysql',
+                 'html', 'php', 'php72', 'php73', 'php74', 'php84', 'mysql',
                  'proxy', 'wp']) or
              (stype == 'wpsubdir' and oldsitetype in ['wpsubdomain']) or
              (stype == 'wpsubdomain' and oldsitetype in ['wpsubdir']) or
              (stype == oldsitetype and cache == oldcachetype)) and
-                not (pargs.php72 or pargs.php73 or pargs.php74)):
+                not (pargs.php72 or pargs.php73 or pargs.php74 or pargs.php84)):
             Log.info(self, Log.FAIL + "can not update {0} {1} to {2} {3}".
                      format(oldsitetype, oldcachetype, stype, cache))
             return 1
@@ -409,6 +413,10 @@ class WOSiteUpdateController(CementBaseController):
             Log.debug(self, "pargs.php74 detected")
             data['php74'] = True
             php74 = True
+        elif pargs.php84:
+            Log.debug(self, "pargs.php84 detected")
+            data['php84'] = True
+            php84 = True
 
         if pargs.php72:
             if php72 is old_php72:
@@ -428,6 +436,12 @@ class WOSiteUpdateController(CementBaseController):
                          "site")
                 pargs.php74 = False
 
+        if pargs.php84:
+            if php84 is old_php84:
+                Log.info(self, "PHP 8.4 is already enabled for given "
+                         "site")
+                pargs.php84 = False
+
         if (data and (not pargs.php73) and
                 (not pargs.php74) and (not pargs.php72)):
             data['php72'] = bool(old_php72 is True)
@@ -439,6 +453,9 @@ class WOSiteUpdateController(CementBaseController):
             data['php74'] = bool(old_php74 is True)
             Log.debug(self, "data php74 = {0}".format(data['php74']))
             php74 = bool(old_php74 is True)
+            data['php84'] = bool(old_php84 is True)
+            Log.debug(self, "data php84 = {0}".format(data['php84']))
+            php84 = bool(old_php84 is True)
 
         if pargs.letsencrypt:
             acme_domains = []
@@ -533,6 +550,9 @@ class WOSiteUpdateController(CementBaseController):
         else:
             data['wo_php'] = 'php73'
             check_php_version = '7.3'
+        elif php84 is True:
+            data['wo_php'] = 'php84'
+            check_php_version = '8.4'
 
         if pargs.hsts:
             data['hsts'] = bool(pargs.hsts == "on")
