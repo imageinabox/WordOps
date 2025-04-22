@@ -24,6 +24,7 @@ class WOStackStatusController(CementBaseController):
                 pargs.php72 or
                 pargs.php73 or
                 pargs.php74 or
+                pargs.php84 or
                 pargs.mysql or
                 pargs.redis or
                 pargs.fail2ban or
@@ -59,7 +60,7 @@ class WOStackStatusController(CementBaseController):
             if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
                 services = services + ['php8.4-fpm']
             else:
-                Log.info(self, "PHP8.4-FPM is not installed")   
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.php72:
             if os.path.exists('{0}'.format(wo_system) + 'php7.2-fpm.service'):
@@ -84,7 +85,7 @@ class WOStackStatusController(CementBaseController):
             if os.path.exists('{0}'.format(wo_system) + 'php8.4-fpm.service'):
                 services = services + ['php8.4-fpm']
             else:
-                Log.info(self, "PHP8.4-FPM is not installed")   
+                Log.info(self, "PHP8.4-FPM is not installed")
 
         if pargs.mysql:
             if ((WOVar.wo_mysql_host == "localhost") or

@@ -144,6 +144,7 @@ class WOStackController(CementBaseController):
                 pargs.admin = True
                 pargs.php73 = True
                 pargs.php74 = True
+                pargs.php84 = True
                 pargs.redis = True
                 pargs.proftpd = True
 
@@ -237,6 +238,7 @@ class WOStackController(CementBaseController):
                 else:
                     Log.debug(self, "PHP 8.4 already installed")
                     Log.info(self, "PHP 8.4 already installed")
+
             # MariaDB 10.3
             if pargs.mysql:
                 pargs.mysqltuner = True
@@ -496,7 +498,8 @@ class WOStackController(CementBaseController):
                     pargs.mysql = True
                 if not (WOAptGet.is_installed(self, 'php7.2-fpm') or
                         WOAptGet.is_installed(self, 'php7.3-fpm') or
-                        WOAptGet.is_installed(self, 'php7.4-fpm')):
+                        WOAptGet.is_installed(self, 'php7.4-fpm') or
+                        WOAptGet.is_installed(self, 'php8.4-fpm')):
                     pargs.php74 = True
                 Log.debug(self, "Setting packages variable for utils")
                 packages = packages + [[
