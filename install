@@ -3,13 +3,13 @@
 # WordOps install and update script
 # -------------------------------------------------------------------------
 # Website:       https://wordops.net
-# GitHub:        https://github.com/imageinabox/WordOps
-# Copyright (c) 2019-2021 - WordOps
+# GitHub:        https://github.com/WordOps/WordOps
+# Copyright (c) 2019-2025 - WordOps
 # This script is licensed under M.I.T
 # -------------------------------------------------------------------------
 # wget -qO wo wops.cc && sudo -E bash wo
 # -------------------------------------------------------------------------
-# Version 3.13.3 - 2021-09-15
+# Version 3.22.0 - 2024-12-06
 # -------------------------------------------------------------------------
 
 # CONTENTS
@@ -134,12 +134,13 @@ wo_init_variables() {
         if [ "$wo_travis" = "y" ]; then
             wo_branch=updating-configuration
         else
-            wo_branch=main
+            wo_branch=master
         fi
     fi
     readonly wo_install_log=/var/log/wo/install.log
     readonly TIME_FORMAT='%d-%b-%Y-%H%M%S'
-    readonly TIME=$(date +"$TIME_FORMAT")
+    TIME=$(date +"$TIME_FORMAT")
+    readonly TIME
     readonly NGINX_BACKUP_FILE="/var/lib/wo-backup/nginx-backup.$TIME.tar.zst"
     readonly EE_BACKUP_FILE="/var/lib/wo-backup/ee-backup.$TIME.tar.zst"
     readonly WO_BACKUP_FILE="/var/lib/wo-backup/wo-backup.$TIME.tar.zst"
@@ -167,9 +168,9 @@ wo_check_distro() {
             wo_lib_echo_fail "Feel free to open a pull-request if you want to add support for another Linux distributions"
             exit 100
         else
-            check_wo_linux_distro=$(lsb_release -sc | grep -E "xenial|bionic|jessie|stretch|buster|focal")
+            check_wo_linux_distro=$(lsb_release -sc | grep -E "buster|focal|jammy|bullseye|bookworm|noble")
             if [ -z "$check_wo_linux_distro" ]; then
-                wo_lib_echo_fail "WordOps (wo) only supports Ubuntu 16.04/18.04/20.04 LTS, Debian 9.x/10.x and Raspbian 9.x/10x.\n
+                wo_lib_echo_fail "WordOps (wo) only supports Ubuntu 20.04/22.04/24.04 LTS, Debian 10.x/11.x/12.x and Raspbian 10x./11.x/12.x \n
                 You can bypass this warning by adding the flag --force to the install command"
                 exit 100
             fi
@@ -207,11 +208,11 @@ wo_install_dep() {
     wo_linux_distro=$(lsb_release -is)
     if [ "$wo_linux_distro" == "Ubuntu" ]; then
         # install dependencies
+        add-apt-repository ppa:git-core/ppa -y
         apt-get --option=Dpkg::options::=--force-confmiss --option=Dpkg::options::=--force-confold --assume-yes install \
             build-essential curl gzip python3-pip python3-apt python3-venv gcc python3-dev sqlite3 git tar software-properties-common pigz \
             gnupg2 cron ccze rsync apt-transport-https tree haveged ufw unattended-upgrades tzdata ntp zstd idn \
             python3-distutils-extra libapt-pkg-dev bash-completion >/dev/null 2>&1
-        curl -sL https://build.opensuse.org/projects/home:virtubox/public_key  | apt-key add -
     else
         # install dependencies
         apt-get --option=Dpkg::options::=--force-confmiss --option=Dpkg::options::=--force-confold --assume-yes install \
@@ -219,26 +220,88 @@ wo_install_dep() {
             software-properties-common pigz apt-transport-https gnupg2 cron ccze rsync tree haveged ufw unattended-upgrades tzdata ntp zstd idn \
             python3-distutils-extra libapt-pkg-dev bash-completion >/dev/null 2>&1
         # add php repository gpg key
-        [ -d /etc/apt/trusted.gpg.d ] && { wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg; }
-        # add nginx repository gpg key
-        curl -sL https://build.opensuse.org/projects/home:virtubox/public_key  | apt-key add -
+        curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+        dpkg -i /tmp/debsuryorg-archive-keyring.deb && rm -f /tmp/debsuryorg-archive-keyring.deb
     fi
     locale-gen en
     # enable unattended upgades
     if [ ! -f /etc/apt/apt.conf.d/20auto-upgrades ]; then
         cp -f /usr/share/unattended-upgrades/20auto-upgrades /etc/apt/apt.conf.d/20auto-upgrades
     fi
-    # upgrade pip
-    python3 -m pip install --upgrade pip
+}
+
+wo_download_gpg_keys() {
+    local wo_distro_version
+    wo_distro_version=$(lsb_release -rs | grep -oE '[0-9]+')
+    local wo_linux_distro
+    wo_linux_distro=$(lsb_release -is)
+
+    # create directories
+    mkdir -p /usr/share/keyrings /etc/apt/keyrings
+
+    # redis gpg key
+    curl -fsSL https://packages.redis.io/gpg | gpg --dearmor | tee /usr/share/keyrings/redis-archive-keyring.gpg >/dev/null 2>&1
+
+    # mariadb
+    curl -o /etc/apt/keyrings/mariadb-keyring.pgp 'https://mariadb.org/mariadb_release_signing_key.pgp'
+
+    # nginx
+    if [ "$wo_linux_distro" == "Debian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Debian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    fi
+    if [ "$wo_linux_distro" == "Raspbian" ]; then
+        curl -fsSL "https://download.opensuse.org/repositories/home:virtubox:WordOps/Raspbian_$wo_distro_version/Release.key" | gpg --dearmor | tee /usr/share/keyrings/wordops-archive-keyring.gpg >/dev/null 2>&1
+    fi
+}
+
+wo_update_repo() {
+    local wo_linux_codename
+    wo_linux_codename=$(lsb_release -sc)
+    if [ -f /etc/apt/sources.list.d/wo-repo.list ]; then
+        # properly define sury repository
+        if grep -q sury /etc/apt/sources.list.d/wo-repo.list; then
+            echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $wo_linux_codename main" >/etc/apt/sources.list.d/php.list
+        fi
+        # properly define mariadb repository
+        repo_file="/etc/apt/sources.list.d/wo-repo.list"
+        if grep -q mariadb /etc/apt/sources.list.d/wo-repo.list; then
+            repo_number=$(grep -c "mariadb" "$repo_file")
+            if [ "$repo_number" -gt 1 ]; then
+                get_urls=$(grep "mariadb" "$repo_file" | awk '{print $3}')
+                mariadb_repo=$(echo "$get_urls" | sort -t '/' -k 6,6 -V | tail -n 1)
+            else
+                mariadb_repo=$(grep mariadb /etc/apt/sources.list.d/wo-repo.list | awk '{print $3}')
+            fi
+            echo "deb [signed-by=/etc/apt/keyrings/mariadb-keyring.pgp] $mariadb_repo $wo_linux_codename main" >/etc/apt/sources.list.d/mariadb.list
+        fi
+        # properly define redis repository
+        if grep -q redis /etc/apt/sources.list.d/wo-repo.list; then
+            echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $wo_linux_codename main" >/etc/apt/sources.list.d/redis.list
+        fi
+        # properly define WordOps nginx repository
+        if grep -q WordOps /etc/apt/sources.list.d/wo-repo.list; then
+            wo_repo=$(grep WordOps /etc/apt/sources.list.d/wo-repo.list | awk -F\  '{ print $2 }')
+            echo "deb [signed-by=/usr/share/keyrings/wordops-archive-keyring.gpg] $wo_repo /" >/etc/apt/sources.list.d/wordops.list
+        fi
+        # cleanup wo-repo.list
+        if grep -Eqv "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list; then
+            rm -f /etc/apt/sources.list.d/wo-repo.list
+        else
+            clean_wo_repo=$(grep -Ev "WordOps|mariadb|sury|redis" /etc/apt/sources.list.d/wo-repo.list)
+            echo "$clean_wo_repo" >/etc/apt/sources.list.d/wo-repo.list
+        fi
+    fi
 }
 
 wo_timesync() {
     # set default ntp pools
-    if [ -f /etc/systemd/timesyncd.conf ]; then
-        if ! grep -q "time.cloudflare.com" /etc/systemd/timesyncd.conf; then
-            sed -e 's/^#NTP=/NTP=time.cloudflare.com 0.ubuntu.pool.ntp.org 1.ubuntu.pool.ntp.org 2.ubuntu.pool.ntp.org 3.ubuntu.pool.ntp.org/' -i /etc/systemd/timesyncd.conf
-            # enable ntp
-            timedatectl set-ntp 1
+    if [ "$wo_distro_codename" != "bookworm" ] && [ "$wo_distro_codename" != "noble" ]; then
+        if [ -f /etc/systemd/timesyncd.conf ]; then
+            if ! grep -q "time.cloudflare.com" /etc/systemd/timesyncd.conf; then
+                sed -e 's/^#NTP=/NTP=time.cloudflare.com 0.ubuntu.pool.ntp.org 1.ubuntu.pool.ntp.org 2.ubuntu.pool.ntp.org 3.ubuntu.pool.ntp.org/' -i /etc/systemd/timesyncd.conf
+                # enable ntp
+                timedatectl set-ntp 1
+            fi
         fi
     fi
 }
@@ -437,41 +500,51 @@ wo_install() {
     if [ -d /usr/local/lib/python3."$python_ver"/dist-packages ]; then
         cd /usr/local/lib/python3."$python_ver"/dist-packages || exit 1
     fi
-    python3 -m pip uninstall -yq wo wordops ee
+    if [ "$wo_distro_codename" != "bookworm" ]; then
+        pip uninstall -yq wo wordops ee
+    fi
+
     cd || exit 1
     if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
         source /opt/wo/bin/activate
-        python3 -m pip uninstall setuptools -y
-        python3 -m pip install -I setuptools==57.5.0
-        python3 -m pip install -U pip wheel
+        /opt/wo/bin/pip install -U setuptools
+        /opt/wo/bin/pip install -U pip wheel distro
+        /opt/wo/bin/pip uninstall psutil -y
+        /opt/wo/bin/pip uninstall SQLAlchemy -y
     else
         rm -rf /opt/wo
         python3 -m venv /opt/wo
         source /opt/wo/bin/activate
-        python3 -m pip uninstall setuptools -y
-        python3 -m pip install -I setuptools==57.5.0
-        python3 -m pip install -U pip wheel
+        /opt/wo/bin/pip install -U setuptools
+        /opt/wo/bin/pip install -U pip wheel
+        /opt/wo/bin/pip install -U distro
         if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
             if [ "$wo_distro_codename" = "stretch" ]; then
-                python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+            elif [ "$wo_distro_codename" = "bullseye" ]; then
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+            elif [ "$wo_distro_codename" = "bookworm" ]; then
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
             else
-                python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
             fi
         else
             if [ "$wo_distro_codename" = "focal" ]; then
-                python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
             elif [ "$wo_distro_codename" = "bionic" ]; then
-                python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+            elif [ "$wo_distro_codename" = "jammy" ]; then
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
             else
-                python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.1.y-xenial#egg=python-apt
+                /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
             fi
         fi
     fi
 
     if [ "$wo_branch" = "master" ]; then
-        python3 -m pip install -U wordops
+        /opt/wo/bin/pip install -U wordops --upgrade-strategy=eager
     else
-        python3 -m pip install -I "git+https://github.com/imageinabox/WordOps.git@$wo_branch#egg=wordops"
+        /opt/wo/bin/pip install -I "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
     fi
     local python_venv
     python_venv=$(python3 -c "import sys; print(sys.version_info[1])")
@@ -481,7 +554,7 @@ wo_install() {
     rm -rf /usr/local/bin/wo /usr/local/lib/python3."$python_venv"/dist-packages/{etc,usr}
     ln -s /opt/wo/bin/wo /usr/local/bin/
     deactivate
-    if [ ! -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ];then
+    if [ ! -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
         python3 -m venv --system-site-packages /opt/wo
     fi
 }
@@ -500,35 +573,41 @@ wo_travis_install() {
     if [ -f ./setup.py ]; then
         if [ -d /opt/wo/lib/python3."$python_ver"/site-packages/apt ]; then
             source /opt/wo/bin/activate
-            python3 -m pip uninstall setuptools -y
-            python3 -m pip install -I setuptools==57.5.0
-            python3 -m pip install -U pip wheel
+            /opt/wo/bin/pip install -U setuptool
+            /opt/wo/bin/pip install -U pip wheel
+            /opt/wo/bin/pip uninstall psutil -y
+            /opt/wo/bin/pip uninstall SQLAlchemy -y
         else
             rm -rf /opt/wo
             python3 -m venv /opt/wo
             source /opt/wo/bin/activate
-            python3 -m pip uninstall setuptools -y
-            python3 -m pip install -I setuptools==57.5.0
-            python3 -m pip install -U pip wheel
+            /opt/wo/bin/pip install -U setuptools
+            /opt/wo/bin/pip install -U pip wheel
             if [ "$wo_linux_distro" = "Debian" ] || [ "$wo_linux_distro" = "Raspbian" ]; then
                 if [ "$wo_distro_codename" = "stretch" ]; then
-                    python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.4.y#egg=python-apt
+                elif [ "$wo_distro_codename" = "bullseye" ]; then
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
+                elif [ "$wo_distro_codename" = "bookworm" ]; then
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.5.3#egg=python-apt
                 else
-                    python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.8.4.y#egg=python-apt
                 fi
             else
                 if [ "$wo_distro_codename" = "focal" ]; then
-                    python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.0.0#egg=python-apt
                 elif [ "$wo_distro_codename" = "bionic" ]; then
-                    python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.6.y#egg=python-apt
+                elif [ "$wo_distro_codename" = "jammy" ]; then
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.2.1#egg=python-apt
                 else
-                    python3 -m pip install git+https://salsa.debian.org/apt-team/python-apt.git@1.1.0_beta1ubuntu0.16.04.9#egg=python-apt
+                    /opt/wo/bin/pip install git+https://salsa.debian.org/apt-team/python-apt.git@2.8.y#egg=python-apt
                 fi
             fi
         fi
-        python3 -m pip install -U .
+        /opt/wo/bin/pip install -U . --upgrade-strategy=eager
     else
-        python3 -m pip install -U "git+https://github.com/imageinabox/WordOps.git@$wo_branch#egg=wordops"
+        /opt/wo/bin/pip install -U "git+https://github.com/WordOps/WordOps.git@$wo_branch#egg=wordops" --upgrade-strategy=eager
     fi
     cp -rf /opt/wo/lib/python3."$python_ver"/site-packages/usr/* /usr/
     cp -rn /opt/wo/lib/python3."$python_ver"/site-packages/etc/* /etc/
@@ -558,14 +637,6 @@ wo_upgrade_nginx() {
     # chec if the package nginx-ee is installed
     CHECK_NGINX_EE=$(dpkg --list | grep nginx-ee)
     CHECK_PHP72=$(command -v php-fpm7.2)
-
-    # add new Nginx repository
-    if [ "$wo_distro_version" == "jessie" ]; then
-        # import the respository key for updates
-        curl -sL https://build.opensuse.org/projects/home:virtubox/public_key  | apt-key add -
-    else
-        curl -sL https://build.opensuse.org/projects/home:virtubox/public_key  | apt-key add -
-    fi
 
     # install new nginx package
     if {
@@ -689,8 +760,8 @@ wo_clean() {
 wo_uninstall() {
     local python_ver
     python_ver=$(python3 -c "import sys; print(sys.version_info[1])")
-    if { python3 -m pip list | grep -q "wordops" >/dev/null 2>&1; }; then
-        python3 -m pip uninstall wordops -y
+    if { /opt/wo/bin/pip list | grep -q "wordops" >/dev/null 2>&1; }; then
+        /opt/wo/bin/pip uninstall wordops -y
     fi
     rm -rf /usr/local/lib/python3."$python_ver"/dist-packages/{pystache-*,cement-2.*,wo-*,wordops-*} /usr/local/bin/wo /etc/bash_completion.d/wo_auto.rc /var/lib/wo /etc/wo /usr/lib/wo/templates /opt/wo
 }
@@ -722,7 +793,7 @@ wo_woconf() {
             echo -e '\n[letsencrypt]\n\nkeylength = "ec-384"' >>/etc/wo/wo.conf
         fi
         if ! grep -q "php" /etc/wo/wo.conf; then
-            echo -e '\n[php]\n\nversion = 7.4' >>/etc/wo/wo.conf
+            echo -e '\n[php]\n\nversion = 8.4' >>/etc/wo/wo.conf
         fi
     fi
 }
@@ -740,14 +811,6 @@ wo_init() {
     ###
 
     if [ -z "$wo_travis" ]; then
-        # import easyengine opensusebuildservice gpg key to avoid issues with packages update
-        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3050ac3cd2ae6f03 >/dev/null 2>&1
-        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xF1656F24C74CD1D8 >/dev/null 2>&1
-        # fix digitalocean mariadb repository issue
-        sed -i 's/sfo1.mirrors.digitalocean.com\/mariadb/mariadb.mirrors.ovh.net\/MariaDB/' /etc/apt/sources.list.d/*.list >/dev/null 2>&1
-        if [ -f /etc/apt/preferences.d/MariaDB.pref ]; then
-            sed -i 's/sfo1.mirrors.digitalocean.com/mariadb.mirrors.ovh.net/' /etc/apt/preferences.d/MariaDB.pref >/dev/null 2>&1
-        fi
         if ! {
             apt-get update --allow-releaseinfo-change -qq >/dev/null 2>&1
         }; then
@@ -762,14 +825,22 @@ wo_init() {
         if ! command_exists jq; then
             apt-get install jq -qq >/dev/null 2>&1
         fi
+        if ! command_exists gpg; then
+            apt-get install gpg -qq >/dev/null 2>&1
+        fi
     fi
     if [ "$wo_force_install" = "y" ]; then
-        [ ! -f "$HOME/.gitconfig" ] && { bash -c 'echo -e "[user]\n\tname = $USER\n\temail = root@$HOSTNAME.local" > $HOME/.gitconfig'; }
+        # Check if USER is empty and assign to a variable
+        USER_OR_WORDOPS=${USER:-WordOps}
+
+        [ ! -f "$HOME/.gitconfig" ] && {
+            bash -c "echo -e \"[user]\n\tname = $USER_OR_WORDOPS\n\temail = root@$HOSTNAME.local\" > $HOME/.gitconfig";
+        }
     fi
     if [ -f ./setup.py ]; then
-        readonly wo_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
+        wo_version_new=$(grep "version='" setup.py | awk -F "'" '{print $2}' 2>&1)
     else
-        readonly wo_version_new=$(curl -m 5 --retry 3 -sL https://api.github.com/repos/imageinabox/WordOps/releases/latest 2>&1 | jq -r '.tag_name')
+        wo_version_new=$(curl -m 5 --retry 3 -sL https://api.github.com/repos/WordOps/WordOps/releases/latest 2>&1 | jq -r '.tag_name')
     fi
 
     echo ""
@@ -779,25 +850,15 @@ wo_init() {
 }
 
 wo_php_fix() {
-    local php_versions="5.6 7.0 7.1 7.2 7.3 7.4"
-
-    apt-get autoremove --assume-yes --purge php8.0-* php-igbinary php-memcached php-msgpack php-redis php-imagick php-xdebug php-memcache
-    for php_version in $php_versions; do
-        if [ -f "/usr/bin/php$php_version" ]; then
-            if [ -f "/usr/sbin/php-fpm$php_version" ]; then
-                local php_extensions="igbinary memcached msgpack redis imagick xdebug"
-                for php_ext in $php_extensions; do
-                    apt-get -option=Dpkg::options::=--force-confmiss --option=Dpkg::options::=--force-confold --assume-yes install "php$php_version-$php_ext"
-                done
-            else
-                apt-get autoremove --assume-yes --purge "php$php_version-*"
-            fi
-
-        fi
-    done
     if [ -f /lib/systemd/system/mariadb.service ]; then
         systemctl daemon-reload
         systemctl enable mariadb
+    fi
+}
+
+wo_git_secure_path() {
+    if ! grep -q "safe" ~/.gitconfig; then
+        echo -e "\n[safe]\n  directory = *" >>~/.gitconfig
     fi
 }
 
@@ -807,12 +868,13 @@ wo_php_fix() {
 
 # create required directories
 wo_dir_init
-# install lsb_release, curl and display header
+# install lsb_release, curl, gpg and display header
 wo_init
 # define main variables
 wo_init_variables
 # remove old repositories
 _run wo_clean_repo
+_run wo_download_gpg_keys
 
 if [ -z "$wo_force_install" ]; then
     # check distribution support
@@ -832,6 +894,7 @@ else
         _run wo_woconf
         _run wo_fix_kernel
         _run wo_php_fix
+        _run wo_update_repo
         # 2 - Migration from EEv3
     else
         if [ -x /usr/local/bin/ee ]; then
@@ -867,15 +930,22 @@ else
     _run secure_wo_db
 
     wo sync
+    _run wo_git_secure_path
 
     if [ "$ee_migration" = "1" ]; then
         echo
-        wo_lib_echo "The migration from EasyEngine to WordOps was succesfull!"
+        wo_lib_echo "The migration from EasyEngine to WordOps was successful!"
         wo_lib_echo "The EasyEngine backup files can be found in /var/lib/wo-backup/ee-backup.tgz"
         echo
     elif [ "$wo_upgrade" = "1" ]; then
-        wo_lib_echo "WordOps (wo) upgrade to $wo_version_new was succesfull!"
-        wo_lib_echo "Changelog is available on https://github.com/imageinabox/WordOps/releases/tag/$wo_version_new"
+        wo_lib_echo "WordOps (wo) upgrade to $wo_version_new was successful!"
+        wo_lib_echo "Changelog is available on https://github.com/WordOps/WordOps/releases/tag/$wo_version_new"
+        echo
+        version_to_check="v3.21"
+        if echo "$wo_version_new" | grep -q "$version_to_check"; then
+            wo_lib_echo "To upgrade Nginx package and configuration for HTTP/3 QUIC, use the following command"
+            wo_lib_echo_info "wo stack migrate --nginx"
+        fi
         echo
         wo_lib_echo "To upgrade WordOps web stacks, you can use the command:"
         wo_lib_echo_info "wo stack upgrade"
@@ -897,8 +967,7 @@ else
     echo
     wo_lib_echo "WordOps Documentation : https://docs.wordops.net"
     wo_lib_echo "WordOps Community Forum : https://community.wordops.net"
-    wo_lib_echo "WordOps Community Chat : https://chat.wordops.net"
     echo
-    wo_lib_echo "Give WordOps a GitHub star : https://github.com/imageinabox/WordOps/"
+    wo_lib_echo "Give WordOps a GitHub star : https://github.com/WordOps/WordOps/"
     echo
 fi
